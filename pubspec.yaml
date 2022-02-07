@@ -1,6 +1,0 @@
-name: sumgo_crawller_dart
-environment:
-  sdk: ">=2.12.0 <3.0.0"
-dependencies: 
-  puppeteer: ^2.6.0
-  websocket: ^0.0.5
