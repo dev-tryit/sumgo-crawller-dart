@@ -3,16 +3,15 @@ import './util/FileUtil.dart';
 
 // await tab1.waitForSelector(id); // 해당selector가 있는지 기다리는데 사용
 void main() async {
+  Map localData = FileUtil.readJsonFile("./local.json");
+
   var browser = await puppeteer.launch(
     headless: true,
     args: ['--no-sandbox'], //없으면 에러남
   );
   var tab1 = await browser.newPage();
 
-  Map map = FileUtil.readJsonFile("./local.json");
-  print(map);
-
-  // await login(tab1);
+  await login(tab1, localData);
 
   //파싱작업.
 
@@ -27,7 +26,7 @@ void main() async {
   await browser.close();
 }
 
-Future<void> login(Page tab1) async {
+Future<void> login(Page tab1, Map localData) async {
   for (int i = 0; i < 3; i++) {
     if (await checkLogin(tab1)) {
       print("로그인 성공");
@@ -35,8 +34,9 @@ Future<void> login(Page tab1) async {
     }
 
     print("로그인 필요함");
-    await tab1.type('[name="email"]', 'd', delay: Duration(milliseconds: 100));
-    await tab1.type('[name="password"]', 'd',
+    await tab1.type('[name="email"]', localData["id"],
+        delay: Duration(milliseconds: 100));
+    await tab1.type('[name="password"]', localData["pw"],
         delay: Duration(milliseconds: 100));
     await tab1.click('.btn.btn-login.btn-primary');
 
