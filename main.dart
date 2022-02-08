@@ -2,27 +2,52 @@ import 'package:puppeteer/puppeteer.dart';
 import './util/FileUtil.dart';
 
 // ---Guide
-// await tab1.waitForSelector(id); // 해당selector가 있는지 기다리는데 사용
-// tab1.$$('.request-list > li .quote > span.message'); // querySelectorAll를 나타냄.
+// await tab.waitForSelector(id); // 해당selector가 있는지 기다리는데 사용
+// tag.$('.quote > span.message')// querySelector를 나타냄.
+// tab.$$('.request-list > li .quote > span.message'); // querySelectorAll를 나타냄.
 
+const waitMinutes = 5;
 const delay = Duration(milliseconds: 300);
 const timeout = Duration(seconds: 20);
+List<String> listToInclude = ["취미/자기개발", "앱 개발"];
+List<String> listToExclude = ["초등학생", "중학생", "고등학생", "20대"];
 
 // /querySelectorAll
 
 void main() async {
   Map localData = FileUtil.readJsonFile("./local.json");
+  openBrowser((tab) async {
+    while (true) {
+      await wait(tab, waitMinutes * 60 * 1000);
+      await login(tab, localData);
+      await deleteRequests(tab);
+    }
+  });
+}
 
+Future<void> openBrowser(Future<void> Function(Page tab) function) async {
   var browser = await puppeteer.launch(
     headless: true,
     args: ['--no-sandbox'], //없으면 에러남
   );
-  var tab1 = await browser.newPage();
+  var tab = await browser.newPage();
 
-  await login(tab1, localData);
+  await function(tab);
+
+  // Gracefully close the browser's process
+  try {
+    await tab.close();
+    await browser.close();
+  } catch (e) {}
+}
+
+Future<void> deleteRequests(Page tab) async {
+  print("deleteRequests 시작");
+  await tab.goto('https://soomgo.com/requests/received',
+      wait: Until.networkIdle);
 
   List<ElementHandle> tagList =
-      await tab1.$$('.request-list > li .quote > span.message');
+      await tab.$$('.request-list > li > .request-item');
   if (tagList.isEmpty) {
     print("요청이 없습니다.");
     return;
@@ -30,58 +55,80 @@ void main() async {
   print("요청이 있습니다.");
 
   for (var tag in tagList) {
-    String tagText = await tagHtml(tab1, tag);
-    print("tagText : " + tagText);
+    var messageTag = await tag.$('.quote > span.message');
+    String message = await tagHtml(tab, messageTag);
+
+    bool validRequest = true;
+    //포함할 request
+    for (String toInclude in listToInclude) {
+      if (!message.contains(toInclude)) {
+        validRequest = false;
+        break;
+      }
+    }
+    //제외할 request
+    for (String toExclude in listToExclude) {
+      if (message.contains(toExclude)) {
+        validRequest = false;
+        break;
+      }
+    }
+
+    if (!validRequest) {
+      var deleteTag = await tag.$('.quote-btn.del');
+      await deleteTag.click();
+
+      var dialogTag = await tab.$('.swal2-confirm.btn');
+      await dialogTag.click();
+    } else {
+      print("내가 좋하하는 tagText : " + message);
+    }
   }
-
-  //파싱작업.
-
-  // await tab1.type('.devsite-search-field', 'Headless Chrome');
-
-  // Do something... See other examples
-  // await tab1.screenshot();
-  // await tab1.pdf();
-  // await tab1.evaluate('() => document.title');
-
-  // Gracefully close the browser's process
-  await browser.close();
 }
 
-Future<void> login(Page tab1, Map localData) async {
+Future<void> login(Page tab, Map localData) async {
   for (int i = 0; i < 3; i++) {
-    if (await checkLogin(tab1)) {
+    if (await checkLogin(tab)) {
       print("로그인 성공");
       break;
     }
 
     print("로그인 필요함");
-    await tab1.type('[name="email"]', localData["id"], delay: delay);
-    await tab1.type('[name="password"]', localData["pw"], delay: delay);
-    await tab1.click('.btn.btn-login.btn-primary', delay: delay);
-
-    await tab1.waitForNavigation(timeout: timeout);
+    await tab.type('[name="email"]', localData["id"], delay: delay);
+    await tab.type('[name="password"]', localData["pw"], delay: delay);
+    await tab.clickAndWaitForNavigation('.btn.btn-login.btn-primary',
+        timeout: timeout);
   }
 }
 
-Future<bool> checkLogin(Page tab1) async {
-  await tab1.goto('https://soomgo.com/requests/received',
+Future<bool> checkLogin(Page tab) async {
+  await tab.goto('https://soomgo.com/requests/received',
       wait: Until.networkIdle);
-  return !await isLoginPage(tab1);
+  return !await isLoginPage(tab);
 }
 
-Future<bool> isLoginPage(Page tab1) async {
-  return await tab1.evaluate(r"$('.login-page').length>0");
+Future<bool> isLoginPage(Page tab) async {
+  return await tab
+      .evaluate(r"(document.querySelector('.login-page')??'').length>0");
 }
 
-Future<bool> checkLoginFail(Page tab1) async {
-  return await tab1.evaluate(
-      r"(($('.invalid-feedback').html()??'').includes('입력해주세요')) || (($('.form-text.text-invalfid').html()??'').includes('입력해주세요'))");
+Future<bool> checkLoginFail(Page tab) async {
+  return await tab.evaluate(
+      r"((document.querySelector('.invalid-feedback')?.innerText ?? '').includes('입력해주세요')) || ((document.querySelector('.form-text.text-invalfid')?.innerText ??'').includes('입력해주세요'))");
 }
 
-Future<String> bodyHtml(Page tab1) async {
-  return await tab1.content ?? "";
+Future<String> bodyHtml(Page tab) async {
+  return await tab.content ?? "";
 }
 
-Future<String> tagHtml(Page tab1, ElementHandle tag) async {
-  return await tab1.evaluate(r'el => el.textContent', args: [tag]);
+Future<String> tagHtml(Page tab, ElementHandle tag) async {
+  return await tab.evaluate(r'el => el.textContent', args: [tag]);
+}
+
+Future<void> wait(Page tab, double millseconds) async {
+  await tab.evaluate('''async () => {
+      await new Promise(function(resolve) { 
+            setTimeout(resolve, $millseconds)
+      });
+  }''');
 }
