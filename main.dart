@@ -1,9 +1,14 @@
 import 'package:puppeteer/puppeteer.dart';
 import './util/FileUtil.dart';
 
+// ---Guide
 // await tab1.waitForSelector(id); // 해당selector가 있는지 기다리는데 사용
+// tab1.$$('.request-list > li .quote > span.message'); // querySelectorAll를 나타냄.
+
 const delay = Duration(milliseconds: 300);
 const timeout = Duration(seconds: 20);
+
+// /querySelectorAll
 
 void main() async {
   Map localData = FileUtil.readJsonFile("./local.json");
@@ -15,7 +20,19 @@ void main() async {
   var tab1 = await browser.newPage();
 
   await login(tab1, localData);
-  print("bodyHtml : " + await bodyHtml(tab1));
+
+  List<ElementHandle> tagList =
+      await tab1.$$('.request-list > li .quote > span.message');
+  if (tagList.isEmpty) {
+    print("요청이 없습니다.");
+    return;
+  }
+  print("요청이 있습니다.");
+
+  for (var tag in tagList) {
+    String tagText = await tagHtml(tab1, tag);
+    print("tagText : " + tagText);
+  }
 
   //파싱작업.
 
@@ -63,4 +80,8 @@ Future<bool> checkLoginFail(Page tab1) async {
 
 Future<String> bodyHtml(Page tab1) async {
   return await tab1.content ?? "";
+}
+
+Future<String> tagHtml(Page tab1, ElementHandle tag) async {
+  return await tab1.evaluate(r'el => el.textContent', args: [tag]);
 }
