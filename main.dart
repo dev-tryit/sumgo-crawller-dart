@@ -18,9 +18,9 @@ void main() async {
   Map localData = FileUtil.readJsonFile("./local.json");
   openBrowser((tab) async {
     while (true) {
-      await wait(tab, waitMinutes * 60 * 1000);
       await login(tab, localData);
       await deleteRequests(tab);
+      await wait(tab, waitMinutes * 60 * 1000);
     }
   });
 }
