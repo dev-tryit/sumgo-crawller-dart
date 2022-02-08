@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:puppeteer/puppeteer.dart';
 import './util/FileUtil.dart';
 
@@ -6,8 +8,9 @@ import './util/FileUtil.dart';
 // tag.$('.quote > span.message')// querySelector를 나타냄.
 // tab.$$('.request-list > li .quote > span.message'); // querySelectorAll를 나타냄.
 
-const waitMinutes = 5;
-const delay = Duration(milliseconds: 300);
+late double waitMinutes;
+const defaultTimeout = Duration(seconds: 10);
+const delay = Duration(milliseconds: 100);
 const timeout = Duration(seconds: 20);
 List<String> listToInclude = ["취미/자기개발", "앱 개발"];
 List<String> listToExclude = ["초등학생", "중학생", "고등학생", "20대"];
@@ -18,6 +21,8 @@ void main() async {
   Map localData = FileUtil.readJsonFile("./local.json");
   openBrowser((tab) async {
     while (true) {
+      waitMinutes = (5 + Random().nextInt(5)).toDouble();
+
       await login(tab, localData);
       await deleteRequests(tab);
       await wait(tab, waitMinutes * 60 * 1000);
@@ -28,9 +33,17 @@ void main() async {
 Future<void> openBrowser(Future<void> Function(Page tab) function) async {
   var browser = await puppeteer.launch(
     headless: true,
-    args: ['--no-sandbox'], //없으면 에러남
+    args: [
+      '--no-sandbox',
+      '--window-size=1280,1024',
+    ], //없으면 에러남
+    defaultViewport: DeviceViewport(
+      width: 1280,
+      height: 1024,
+    ),
   );
   var tab = await browser.newPage();
+  tab.defaultTimeout = defaultTimeout;
 
   await function(tab);
 
@@ -78,8 +91,19 @@ Future<void> deleteRequests(Page tab) async {
       var deleteTag = await tag.$('.quote-btn.del');
       await deleteTag.click();
 
-      var dialogTag = await tab.$('.swal2-confirm.btn');
-      await dialogTag.click();
+      try {
+        await tab.waitForSelector('.sv-col-small-button-bw.sv__btn-close');
+        var closeTag = await tab.$('.sv-col-small-button-bw.sv__btn-close');
+        await closeTag.click();
+      } catch (e) {}
+
+      // FileUtil.writeFile("body.html", await bodyHtml(tab));
+
+      try {
+        await tab.waitForSelector('.swal2-confirm.btn');
+        var dialogTag = await tab.$('.swal2-confirm.btn');
+        await dialogTag.click();
+      } catch (e) {}
     } else {
       print("내가 좋하하는 tagText : " + message);
     }
@@ -108,8 +132,7 @@ Future<bool> checkLogin(Page tab) async {
 }
 
 Future<bool> isLoginPage(Page tab) async {
-  return await tab
-      .evaluate(r"(document.querySelector('.login-page')??'').length>0");
+  return await tab.evaluate(r"Boolean(document.querySelector('.login-page'))");
 }
 
 Future<bool> checkLoginFail(Page tab) async {
