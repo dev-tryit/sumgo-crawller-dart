@@ -2,6 +2,9 @@ import 'package:puppeteer/puppeteer.dart';
 import './util/FileUtil.dart';
 
 // await tab1.waitForSelector(id); // 해당selector가 있는지 기다리는데 사용
+const delay = Duration(milliseconds: 300);
+const timeout = Duration(seconds: 20);
+
 void main() async {
   Map localData = FileUtil.readJsonFile("./local.json");
 
@@ -12,6 +15,7 @@ void main() async {
   var tab1 = await browser.newPage();
 
   await login(tab1, localData);
+  print("bodyHtml : " + await bodyHtml(tab1));
 
   //파싱작업.
 
@@ -34,13 +38,11 @@ Future<void> login(Page tab1, Map localData) async {
     }
 
     print("로그인 필요함");
-    await tab1.type('[name="email"]', localData["id"],
-        delay: Duration(milliseconds: 100));
-    await tab1.type('[name="password"]', localData["pw"],
-        delay: Duration(milliseconds: 100));
-    await tab1.click('.btn.btn-login.btn-primary');
+    await tab1.type('[name="email"]', localData["id"], delay: delay);
+    await tab1.type('[name="password"]', localData["pw"], delay: delay);
+    await tab1.click('.btn.btn-login.btn-primary', delay: delay);
 
-    await tab1.waitForNavigation();
+    await tab1.waitForNavigation(timeout: timeout);
   }
 }
 
@@ -57,4 +59,8 @@ Future<bool> isLoginPage(Page tab1) async {
 Future<bool> checkLoginFail(Page tab1) async {
   return await tab1.evaluate(
       r"(($('.invalid-feedback').html()??'').includes('입력해주세요')) || (($('.form-text.text-invalfid').html()??'').includes('입력해주세요'))");
+}
+
+Future<String> bodyHtml(Page tab1) async {
+  return await tab1.content ?? "";
 }
