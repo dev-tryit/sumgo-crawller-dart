@@ -106,14 +106,15 @@ class PuppeteerUtil {
   Future<String> bodyHtml() async {
     return await tab.content ?? "";
   }
-
-  Future<dynamic> evaluate(String pageFunction, {List? args}) async {
-    return await tab.evaluate(pageFunction);
-  }
-
+  
   Future<String> tagHtml(ElementHandle tag) async {
     return await evaluate(r'el => el.textContent', args: [tag]);
   }
+
+  Future<dynamic> evaluate(String pageFunction, {List? args}) async {
+    return await tab.evaluate(pageFunction, args: args);
+  }
+
 
   Future<void> type(String selector, String content, {Duration? delay}) async {
     await tab.type(selector, content, delay: delay);
@@ -122,7 +123,7 @@ class PuppeteerUtil {
   Future<Response?> clickAndWaitForNavigation(String selector,
       {Duration? timeout, Until? wait}) async {
     return await tab.clickAndWaitForNavigation('.btn.btn-login.btn-primary',
-        timeout: timeout);
+        timeout: timeout, wait: wait);
   }
 
   Future<bool> existTag(String selector) async {
