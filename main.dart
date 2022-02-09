@@ -104,6 +104,8 @@ Future<void> deleteRequests(Page tab) async {
         var dialogTag = await tab.$('.swal2-confirm.btn');
         await dialogTag.click();
       } catch (e) {}
+
+      print("삭제할 tagText : " + message);
     } else {
       print("내가 좋하하는 tagText : " + message);
     }
