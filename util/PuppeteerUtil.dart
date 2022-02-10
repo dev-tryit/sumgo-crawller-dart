@@ -102,4 +102,9 @@ class PuppeteerUtil {
       await tagToClick.click();
     } catch (e) {}
   }
+
+  Future<bool> include(String selector, String text) async {
+    return await evaluate(
+        "(document.querySelector('$selector')?.innerText ?? '').includes('$text')");
+  }
 }

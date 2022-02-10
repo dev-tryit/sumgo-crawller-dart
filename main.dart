@@ -46,8 +46,8 @@ Future<bool> isLoginSuccess() async {
 }
 
 Future<bool> checkLoginFail() async {
-  return await p.evaluate(
-      r"((document.querySelector('.invalid-feedback')?.innerText ?? '').includes('입력해주세요')) || ((document.querySelector('.form-text.text-invalfid')?.innerText ??'').includes('입력해주세요'))");
+  return await p.include(".invalid-feedback", "입력해주세요") ||
+      await p.include(".form-text.text-invalfid", "입력해주세요");
 }
 
 Future<void> deleteRequests() async {
@@ -66,7 +66,7 @@ Future<void> deleteRequests() async {
     String message = await p.tagHtml(messageTag);
 
     if (!isValidRequest(message)) {
-      p.click('.quote-btn.del',tag:tag);
+      p.click('.quote-btn.del', tag: tag);
       p.click('.sv-col-small-button-bw.sv__btn-close');
       p.click('.swal2-confirm.btn');
 
