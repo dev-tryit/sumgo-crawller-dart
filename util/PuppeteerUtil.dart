@@ -43,12 +43,13 @@ class PuppeteerUtil {
     await tab.goto(url, wait: Until.networkIdle);
   }
 
-  Future<String> bodyHtml() async {
-    return await tab.content ?? "";
-  }
-
-  Future<String> tagHtml(ElementHandle tag) async {
-    return await evaluate(r'el => el.textContent', args: [tag]);
+  Future<String> html({ElementHandle? tag}) async {
+    if(tag == null) {
+      return await tab.content ?? "";
+    }
+    else {
+      return await evaluate(r'el => el.textContent', args: [tag]);
+    }
   }
 
   Future<dynamic> evaluate(String pageFunction, {List? args}) async {

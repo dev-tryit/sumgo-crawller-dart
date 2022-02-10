@@ -63,7 +63,7 @@ Future<void> deleteRequests() async {
 
   for (var tag in tagList) {
     var messageTag = await p.$('.quote > span.message', tag: tag);
-    String message = await p.tagHtml(messageTag);
+    String message = await p.html(tag:messageTag);
 
     if (!isValidRequest(message)) {
       p.click('.quote-btn.del', tag: tag);
