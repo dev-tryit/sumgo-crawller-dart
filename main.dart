@@ -8,8 +8,8 @@ final p = PuppeteerUtil();
 final delay = Duration(milliseconds: 100);
 final timeout = Duration(seconds: 20);
 final List<String> listToIncludeAlways = const ["flutter"];
-final List<String> listToInclude = const ["취미/자기개발", "앱 개발"];
-final List<String> listToExclude = const ["초등학생", "중학생", "고등학생", "20대"];
+final List<String> listToInclude = const ["앱 개발"];
+final List<String> listToExclude = const ["초등학생", "중학생"];
 
 void main() async {
   Map localData = FileUtil.readJsonFile("./local.json");
@@ -63,7 +63,7 @@ Future<void> deleteRequests() async {
 
   for (var tag in tagList) {
     var messageTag = await p.$('.quote > span.message', tag: tag);
-    String message = await p.html(tag:messageTag);
+    String message = await p.html(tag: messageTag);
 
     if (!isValidRequest(message)) {
       p.click('.quote-btn.del', tag: tag);
