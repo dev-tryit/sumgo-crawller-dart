@@ -15,14 +15,14 @@ void main() async {
   Map localData = FileUtil.readJsonFile("./local.json");
   p.openBrowser(() async {
     while (true) {
-      await login(localData);
+      await login(localData["id"],localData["pw"]);
       await deleteRequests();
       await wait();
     }
   });
 }
 
-Future<void> login(Map localData) async {
+Future<void> login(String id,String pw) async {
   for (int i = 0; i < 5; i++) {
     await p.goto('https://soomgo.com/requests/received');
     if (await isLoginSuccess()) {
@@ -31,8 +31,8 @@ Future<void> login(Map localData) async {
     }
 
     print("로그인 필요함");
-    await p.type('[name="email"]', localData["id"], delay: delay);
-    await p.type('[name="password"]', localData["pw"], delay: delay);
+    await p.type('[name="email"]', id, delay: delay);
+    await p.type('[name="password"]', pw, delay: delay);
     await p.clickAndWaitForNavigation('.btn.btn-login.btn-primary',
         timeout: timeout);
   }
