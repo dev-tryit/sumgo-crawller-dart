@@ -17,9 +17,7 @@ void main() async {
     while (true) {
       await login(localData);
       await deleteRequests();
-
-      double waitMinutes = (5 + Random().nextInt(5)).toDouble();
-      await p.wait(waitMinutes * 60 * 1000);
+      await wait();
     }
   });
 }
@@ -102,4 +100,9 @@ bool isValidRequest(String message) {
   }
 
   return isValid;
+}
+
+Future<void> wait() async {
+  double waitMinutes = (5 + Random().nextInt(5)).toDouble();
+  await p.wait(waitMinutes * 60 * 1000);
 }
