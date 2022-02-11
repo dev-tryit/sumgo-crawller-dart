@@ -1,12 +1,5 @@
 import 'package:puppeteer/puppeteer.dart';
 
-// ---Guide
-// await tab.waitForSelector(id); // 해당selector가 있는지 기다리는데 사용
-// tag.$('.quote > span.message')// querySelector를 나타냄.
-// tab.$$('.request-list > li .quote > span.message'); // querySelectorAll를 나타냄.
-
-// /querySelectorAll
-
 class PuppeteerUtil {
   late Browser browser;
   late Page tab;
@@ -44,10 +37,9 @@ class PuppeteerUtil {
   }
 
   Future<String> html({ElementHandle? tag}) async {
-    if(tag == null) {
+    if (tag == null) {
       return await tab.content ?? "";
-    }
-    else {
+    } else {
       return await evaluate(r'el => el.textContent', args: [tag]);
     }
   }
@@ -58,12 +50,6 @@ class PuppeteerUtil {
 
   Future<void> type(String selector, String content, {Duration? delay}) async {
     await tab.type(selector, content, delay: delay);
-  }
-
-  Future<Response?> clickAndWaitForNavigation(String selector,
-      {Duration? timeout, Until? wait}) async {
-    return await tab.clickAndWaitForNavigation('.btn.btn-login.btn-primary',
-        timeout: timeout, wait: wait);
   }
 
   Future<bool> existTag(String selector) async {
@@ -78,19 +64,21 @@ class PuppeteerUtil {
   }''');
   }
 
-  Future<List<ElementHandle>> $$(String selector, {ElementHandle? tag}) async {
-    if (tag != null) {
-      return await tag.$$(selector);
-    } else {
-      return await tab.$$(selector);
-    }
-  }
-
   Future<ElementHandle> $(String selector, {ElementHandle? tag}) async {
+    // querySelector를 나타냄.
     if (tag != null) {
       return await tag.$(selector);
     } else {
       return await tab.$(selector);
+    }
+  }
+
+  Future<List<ElementHandle>> $$(String selector, {ElementHandle? tag}) async {
+    // querySelectorAll를 나타냄.
+    if (tag != null) {
+      return await tag.$$(selector);
+    } else {
+      return await tab.$$(selector);
     }
   }
 
@@ -102,6 +90,16 @@ class PuppeteerUtil {
       var tagToClick = await $(selector, tag: tag);
       await tagToClick.click();
     } catch (e) {}
+  }
+
+  Future<Response?> clickAndWaitForNavigation(String selector,
+      {Duration? timeout, Until? wait}) async {
+    try {
+      return await tab.clickAndWaitForNavigation(selector,
+          timeout: timeout, wait: wait);
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<bool> include(String selector, String text) async {
