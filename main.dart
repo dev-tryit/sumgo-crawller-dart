@@ -3,6 +3,7 @@ import 'package:puppeteer/puppeteer.dart';
 
 import './util/FileUtil.dart';
 import './util/PuppeteerUtil.dart';
+import './util/LogUtil.dart';
 
 final p = PuppeteerUtil();
 final delay = Duration(milliseconds: 100);
@@ -26,11 +27,11 @@ Future<void> login(String id,String pw) async {
   for (int i = 0; i < 5; i++) {
     await p.goto('https://soomgo.com/requests/received');
     if (await isLoginSuccess()) {
-      print("로그인 성공");
+      LogUtil.info("로그인 성공");
       break;
     }
 
-    print("로그인 필요함");
+    LogUtil.info("로그인 필요함");
     await p.type('[name="email"]', id, delay: delay);
     await p.type('[name="password"]', pw, delay: delay);
     await p.clickAndWaitForNavigation('.btn.btn-login.btn-primary',
@@ -49,13 +50,13 @@ Future<bool> checkLoginFail() async {
 }
 
 Future<void> deleteRequests() async {
-  print("deleteRequests 시작");
+  LogUtil.info("deleteRequests 시작");
   await p.goto('https://soomgo.com/requests/received');
 
   List<ElementHandle> tagList =
       await p.$$('.request-list > li > .request-item');
   if (tagList.isEmpty) {
-    print("요청이 없습니다.");
+    LogUtil.info("요청이 없습니다.");
     return;
   }
 
@@ -68,9 +69,9 @@ Future<void> deleteRequests() async {
       p.click('.sv-col-small-button-bw.sv__btn-close');
       p.click('.swal2-confirm.btn');
 
-      print("삭제할 tagText : " + message);
+      LogUtil.info("삭제할 tagText : " + message);
     } else {
-      print("내가 좋하하는 tagText : " + message);
+      LogUtil.info("내가 좋하하는 tagText : " + message);
     }
   }
 }
