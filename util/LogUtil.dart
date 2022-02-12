@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:logger/logger.dart';
 import "package:stack_trace/stack_trace.dart";
 import '../Setting.dart';
@@ -9,6 +11,37 @@ class MyLogFilter extends LogFilter {
   }
 }
 
+class MySimplePrinter extends SimplePrinter {
+  MySimplePrinter({bool printTime = false, bool colors = true})
+      : super(printTime: printTime, colors: colors);
+
+  @override
+  List<String> log(LogEvent event) {
+    var messageStr = _stringifyMessage(event.message);
+    var errorStr = event.error != null ? '  ERROR: ${event.error}' : '';
+    var timeStr = printTime ? 'TIME: ${DateTime.now().toUtc().add(Duration(hours: Setting.logTimeZoneOffset)).toIso8601String()}' : '';
+
+    return ['${_labelFor(event.level)} $timeStr $messageStr$errorStr'];
+  }
+
+  String _stringifyMessage(dynamic message) {
+    final finalMessage = message is Function ? message() : message;
+    if (finalMessage is Map || finalMessage is Iterable) {
+      var encoder = JsonEncoder.withIndent(null);
+      return encoder.convert(finalMessage);
+    } else {
+      return finalMessage.toString();
+    }
+  }
+
+  String _labelFor(Level level) {
+    var prefix = SimplePrinter.levelPrefixes[level]!;
+    var color = SimplePrinter.levelColors[level]!;
+
+    return colors ? color(prefix) : prefix;
+  }
+}
+
 class LogUtil {
   static final bool _showLogLevel = false;
   static final bool _showAppName = false;
@@ -16,7 +49,7 @@ class LogUtil {
   static Logger _logger = new Logger(
     filter: MyLogFilter(),
     level: Setting.LogLevel,
-    printer: new SimplePrinter(printTime: true, colors: true),
+    printer: MySimplePrinter(printTime: true, colors: true),
     // printer: new PrettyPrinter(
     //     methodCount: 0,
     //     // // number of method calls to be displayed
