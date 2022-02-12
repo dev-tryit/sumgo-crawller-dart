@@ -4,6 +4,7 @@ import 'package:puppeteer/puppeteer.dart';
 import './util/FileUtil.dart';
 import './util/PuppeteerUtil.dart';
 import './util/LogUtil.dart';
+import './util/DateTimeUtil.dart';
 
 final p = PuppeteerUtil();
 final delay = Duration(milliseconds: 100);
@@ -16,14 +17,14 @@ void main() async {
   Map localData = FileUtil.readJsonFile("./local.json");
   p.openBrowser(() async {
     while (true) {
-      await login(localData["id"],localData["pw"]);
+      await login(localData["id"], localData["pw"]);
       await deleteRequests();
       await wait();
     }
   });
 }
 
-Future<void> login(String id,String pw) async {
+Future<void> login(String id, String pw) async {
   for (int i = 0; i < 5; i++) {
     await p.goto('https://soomgo.com/requests/received');
     if (await isLoginSuccess()) {
@@ -67,6 +68,7 @@ Future<void> deleteRequests() async {
     if (!isValidRequest(message)) {
       p.click('.quote-btn.del', tag: tag);
       p.click('.sv-col-small-button-bw.sv__btn-close');
+      FileUtil.writeFile(DateTimeUtil.now().toIso8601String(), await p.html());
       p.click('.swal2-confirm.btn');
 
       LogUtil.info("삭제할 tagText : " + message);

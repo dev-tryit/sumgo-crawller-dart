@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:logger/logger.dart';
 import "package:stack_trace/stack_trace.dart";
 import '../Setting.dart';
+import 'DateTimeUtil.dart';
 
 class MyLogFilter extends LogFilter {
   @override
@@ -19,7 +20,7 @@ class MySimplePrinter extends SimplePrinter {
   List<String> log(LogEvent event) {
     var messageStr = _stringifyMessage(event.message);
     var errorStr = event.error != null ? '  ERROR: ${event.error}' : '';
-    var timeStr = printTime ? 'TIME: ${DateTime.now().toUtc().add(Duration(hours: Setting.logTimeZoneOffset)).toIso8601String()}' : '';
+    var timeStr = printTime ? 'TIME: ${DateTimeUtil.now().toIso8601String()}' : '';
 
     return ['${_labelFor(event.level)} $timeStr $messageStr$errorStr'];
   }
