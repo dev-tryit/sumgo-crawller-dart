@@ -68,7 +68,8 @@ Future<void> deleteRequests() async {
     if (!isValidRequest(message)) {
       p.click('.quote-btn.del', tag: tag);
       p.click('.sv-col-small-button-bw.sv__btn-close');
-      FileUtil.writeFile(DateTimeUtil.now().toIso8601String(), await p.html());
+      FileUtil.writeFile(
+          "${DateTimeUtil.now().toIso8601String()}.html", await p.html());
       p.click('.swal2-confirm.btn');
 
       LogUtil.info("삭제할 tagText : " + message);
