@@ -17,9 +17,11 @@ void main() async {
   Map localData = FileUtil.readJsonFile("./local.json");
   p.openBrowser(() async {
     while (true) {
-      await login(localData["id"], localData["pw"]);
-      await deleteRequests();
-      await wait();
+      try {
+        await login(localData["id"], localData["pw"]);
+        await deleteRequests();
+        await wait();
+      } catch (e) {}
     }
   });
 }
