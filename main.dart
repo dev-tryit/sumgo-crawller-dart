@@ -15,15 +15,16 @@ final List<String> listToExclude = const ["초등학생", "중학생"];
 
 void main() async {
   Map localData = FileUtil.readJsonFile("./local.json");
-  p.openBrowser(() async {
-    while (true) {
-      try {
+  p.openBrowser(
+    () async {
+      while (true) {
         await login(localData["id"], localData["pw"]);
         await deleteRequests();
         await wait();
-      } catch (e) {}
-    }
-  });
+      }
+    },
+    headless: false,
+  );
 }
 
 Future<void> login(String id, String pw) async {
@@ -68,11 +69,11 @@ Future<void> deleteRequests() async {
     String message = await p.html(tag: messageTag);
 
     if (!isValidRequest(message)) {
-      p.click('.quote-btn.del', tag: tag);
-      p.click('.sv-col-small-button-bw.sv__btn-close');
-      FileUtil.writeFile(
-          "${DateTimeUtil.now().toIso8601String()}.html", await p.html());
-      p.click('.swal2-confirm.btn');
+      await p.click('.quote-btn.del', tag: tag);
+      await p.click('.sv-col-small-button-bw.sv__btn-close');
+      // FileUtil.writeFile(
+      //     "${DateTimeUtil.now().toIso8601String()}.html", await p.html());
+      await p.click('.swal2-confirm.btn');
 
       LogUtil.info("삭제할 tagText : " + message);
     } else {

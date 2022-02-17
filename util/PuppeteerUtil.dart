@@ -6,17 +6,17 @@ class PuppeteerUtil {
 
   final defaultTimeout = Duration(seconds: 10);
 
-  Future<void> openBrowser(Future<void> Function() function) async {
+  Future<void> openBrowser(Future<void> Function() function, {int width=1280, int height=1024, bool headless = true}) async {
     //open
     browser = await puppeteer.launch(
-      headless: true,
+      headless: headless,
       args: [
         '--no-sandbox',
-        '--window-size=1280,1024',
+        '--window-size=$width,$height',
       ],
       defaultViewport: DeviceViewport(
-        width: 1280,
-        height: 1024,
+        width: width,
+        height: height,
       ),
     );
     tab = await browser.newPage();
@@ -33,7 +33,7 @@ class PuppeteerUtil {
   }
 
   Future<void> goto(String url) async {
-    await tab.goto(url, wait: Until.networkIdle);
+    await tab.goto(url, wait: Until.networkIdle,timeout:defaultTimeout);
   }
 
   Future<String> html({ElementHandle? tag}) async {
