@@ -18,8 +18,11 @@ void main() async {
   p.openBrowser(
     () async {
       while (true) {
-        await login(localData["id"], localData["pw"]);
-        await deleteRequests();
+        try {
+          await login(localData["id"], localData["pw"]);
+          await deleteRequests();
+        }
+        catch(e) {}
         await wait();
       }
     },
@@ -55,6 +58,7 @@ Future<bool> checkLoginFail() async {
 
 Future<void> deleteRequests() async {
   LogUtil.info("deleteRequests 시작");
+  await p.goto('https://soomgo.com');
   await p.goto('https://soomgo.com/requests/received');
 
   List<ElementHandle> tagList =
