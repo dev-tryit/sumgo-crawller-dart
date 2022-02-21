@@ -58,8 +58,8 @@ Future<bool> checkLoginFail() async {
 
 Future<void> deleteRequests() async {
   LogUtil.info("deleteRequests 시작");
-  await p.goto('https://soomgo.com');
   await p.goto('https://soomgo.com/requests/received');
+  await wait(millseconds: 10000);
 
   List<ElementHandle> tagList =
       await p.$$('.request-list > li > .request-item');
@@ -113,7 +113,12 @@ bool isValidRequest(String message) {
   return isValid;
 }
 
-Future<void> wait() async {
-  double waitMinutes = (5 + Random().nextInt(5)).toDouble();
-  await p.wait(waitMinutes * 60 * 1000);
+Future<void> wait({double? millseconds}) async {
+  if(millseconds == null) {
+    double waitMinutes = (5 + Random().nextInt(5)).toDouble();
+    await p.wait(waitMinutes * 60 * 1000);
+  }
+  else {
+    await p.wait(millseconds);
+  }
 }
