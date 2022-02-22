@@ -115,7 +115,7 @@ bool isValidRequest(String message) {
 
 Future<void> wait({double? millseconds}) async {
   if(millseconds == null) {
-    double waitMinutes = (5 + Random().nextInt(5)).toDouble();
+    double waitMinutes = (1 + Random().nextInt(2)).toDouble();
     await p.wait(waitMinutes * 60 * 1000);
   }
   else {
